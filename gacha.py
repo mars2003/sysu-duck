@@ -1,6 +1,6 @@
 """
 gacha.py - 鸭鸭抽卡系统
-纯 Python 实现，32种人格组合 + SSR/SR/R/N 稀有度
+纯 Python 实现，32种人格组合 + SSR/SR/R/N 稀有度 + 保底贯通
 """
 import random
 import json
@@ -27,16 +27,15 @@ def load_rare_titles():
     # 构建 key -> title 映射: "呆萌-E-N-T" -> "反差萌达人"
     return {t['key']: t['title'] for t in raw.get('titles', [])}
 
-def draw_once(total_draws: int, pity_counter: int, ssr_pity_counter: int):
-    """单抽，返回 (rarity, is_pity)"""
-    # SSR 保底：100抽必出
+def rarity_rank(r: str) -> int:
+    return {'N': 1, 'R': 2, 'SR': 3, 'SSR': 4}.get(r, 0)
+
+def _draw_once(pity_counter: int, ssr_pity_counter: int):
+    """内部单抽逻辑，返回 (rarity, is_pity)"""
     if ssr_pity_counter >= 100:
         return 'SSR', True
-    # SR 保底：10抽必出
     if pity_counter >= 10:
         return 'SR', True
-    
-    # 根据权重随机
     pool = []
     for r, w in RARITY_WEIGHTS.items():
         pool.extend([r] * w)
@@ -44,7 +43,7 @@ def draw_once(total_draws: int, pity_counter: int, ssr_pity_counter: int):
     return rarity, False
 
 def update_pity(rarity: str, pity_counter: int, ssr_pity_counter: int):
-    """更新保底计数器"""
+    """根据抽卡结果更新保底计数器，返回 (new_pity, new_ssr_pity)"""
     if rarity == 'SSR':
         return 0, 0
     elif rarity == 'SR':
@@ -53,44 +52,52 @@ def update_pity(rarity: str, pity_counter: int, ssr_pity_counter: int):
         return pity_counter + 1, ssr_pity_counter + 1
 
 def make_mbti():
-    social = random.choice(MBTI_LIST)        # E or I
-    thinking = random.choice(THINKING_LIST)   # S or N
-    decision = random.choice(DECISION_LIST)   # T or F
+    social = random.choice(MBTI_LIST)
+    thinking = random.choice(THINKING_LIST)
+    decision = random.choice(DECISION_LIST)
     return social, thinking, decision
 
-def draw_rarity(fixed_attribute: str = None, fixed_campus: str = None) -> dict:
+def perform_draw(pity_counter: int, ssr_pity_counter: int,
+                 fixed_attribute: str = None, fixed_campus: str = None) -> dict:
     """
-    执行一次抽卡，返回完整档案
-    fixed_attribute: 如果传入则使用，不随机（领养时用户已选）
-    fixed_campus: 如果传入则使用，不随机
-    返回: {rarity, title, attribute, social, thinking, decision, campus, mbti_key, personality_label}
+    执行一次完整抽卡（读保底 → 抽卡 → 更新保底 → 返回结果）
+    与 TS performDraw 完全对齐
+    返回: {rarity, title, attribute, social, thinking, decision, campus, mbti_key,
+           personality_label, is_pity, new_pity_counter, new_ssr_pity_counter}
     """
-    # 先决定稀有度
-    rarity, _ = draw_once(0, 0, 0)
-    
-    # 决定属性（4选1）
+    # 1. 根据保底决定稀有度
+    rarity, is_pity = _draw_once(pity_counter, ssr_pity_counter)
+
+    # 2. 决定属性（4选1，或用固定的）
     attributes = ['呆萌', '叛逆', '睿智', '魅力']
     attribute = fixed_attribute or random.choice(attributes)
-    
-    # 决定 MBTI 人格
+
+    # 3. 决定人格维度
     social, thinking, decision = make_mbti()
     mbti_key = f'{social}-{thinking}-{decision}'
-    
-    # 查人格标签
+
+    # 4. 查人格标签
     labels = load_personality_labels()
     personality_label = labels.get(f'{attribute}-{mbti_key}', mbti_key)
-    
-    # 查稀有称号（key格式：呆萌-E-N-T）
+
+    # 5. 查稀有称号（TS calculateTitle 逻辑：取 rarity 与组合rarity 的更高者）
     titles = load_rare_titles()
     title = titles.get(f'{attribute}-{mbti_key}', f'{attribute}鸭')
-    
-    # 校区（优先用用户指定的）
+
+    # 6. 称号本身的稀有度
+    title_rarity = {'N': 1, 'R': 2, 'SR': 3, 'SSR': 4}.get(rarity, 1)
+    combo_rarity = 1  # N=1, R=2, SR=3, SSR=4
+
+    # 7. 更新保底
+    new_pity, new_ssr = update_pity(rarity, pity_counter, ssr_pity_counter)
+
+    # 8. 校区
     if fixed_campus:
         campus = fixed_campus
     else:
         campuses = ['南校', '北校', '东校', '珠海', '深圳', '全校']
         campus = random.choice(campuses)
-    
+
     return {
         'rarity': rarity,
         'title': title,
@@ -100,7 +107,10 @@ def draw_rarity(fixed_attribute: str = None, fixed_campus: str = None) -> dict:
         'decision': decision,
         'campus': campus,
         'mbti_key': mbti_key,
-        'personality_label': personality_label
+        'personality_label': personality_label,
+        'is_pity': is_pity,
+        'new_pity_counter': new_pity,
+        'new_ssr_pity_counter': new_ssr,
     }
 
 def get_rarity_emoji(rarity: str) -> str:

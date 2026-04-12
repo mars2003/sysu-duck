@@ -158,6 +158,28 @@ def increment_draw(user_id: str):
     conn.commit()
     conn.close()
 
+
+def update_profile_pity(user_id: str, pity_counter: int, ssr_pity_counter: int):
+    """更新保底计数器"""
+    conn = get_conn()
+    c = conn.cursor()
+    c.execute('UPDATE duck_profiles SET pity_counter=?, ssr_pity_counter=?, updated_at=? WHERE user_id=?',
+              (pity_counter, ssr_pity_counter, ts(), user_id))
+    conn.commit()
+    conn.close()
+
+
+def get_profile_pity(user_id: str) -> tuple[int, int]:
+    """获取保底计数器，返回 (pity_counter, ssr_pity_counter)"""
+    conn = get_conn()
+    c = conn.cursor()
+    c.execute('SELECT pity_counter, ssr_pity_counter FROM duck_profiles WHERE user_id=?', (user_id,))
+    row = c.fetchone()
+    conn.close()
+    if row:
+        return (row[0] or 0, row[1] or 0)
+    return (0, 0)
+
 def get_draw_history(user_id: str, limit: int = 10) -> List[Dict[str, Any]]:
     conn = get_conn()
     c = conn.cursor()
