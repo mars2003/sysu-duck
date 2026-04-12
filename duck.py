@@ -109,7 +109,7 @@ def adopt(user_id: str, nickname: str, attribute: str, campus: str) -> str:
     # 记录抽卡（draw_type='create'）
     add_draw_record(user_id, 'create', attribute, d['social'], d['thinking'],
                     d['decision'], d['rarity'], d['title'], 1 if d['is_pity'] else 0)
-    # 更新保底（虽然归零了，但保持接口一致）
+    # 更新保底
     update_profile_pity(user_id, d['new_pity_counter'], d['new_ssr_pity_counter'])
 
     # 领取全校编号
@@ -118,10 +118,27 @@ def adopt(user_id: str, nickname: str, attribute: str, campus: str) -> str:
         update_profile_field(user_id, 'yayaid', str(yid))
         yayaid_line = f"\n🏅 全校第 {yid} 只"
     else:
-        yayaid_line = ""
+        yayaid_line = '\n🏅 编号获取中...'
 
-    result = format_draw_result(d)
-    return f"🎉 恭喜！你抽到了：\n\n{result}{yayaid_line}\n\n✅ 鸭鸭「{nickname}」创建成功！"
+    emoji = get_rarity_emoji(d['rarity'])
+    rarity_star = {'': '', 'N': '', 'R': '✦', 'SR': '✦✦', 'SSR': '✦✦✦'}.get(d['rarity'], '')
+    title_line = f"\n🏆 稀有称号：{d['title']}（{d['rarity']}{rarity_star}）" if d['rarity'] != 'N' else ''
+
+    # TS 风格 MBTI 进度条
+    mbti_bar = (
+        f"{emoji} 正在生成鸭鸭人格...\n"
+        f"   主属性：████░░░░░░ → 【{d['attribute']}】\n"
+        f"   社交倾向：░░░░████░░ → {d['social']}鸭\n"
+        f"   思维风格：░░░░░░████ → {d['thinking']}鸭\n"
+        f"   决策方式：████████░░ → {d['decision']}鸭\n\n"
+        f"✨ 恭喜获得：{emoji}【{d['attribute']}】+ {d['social']} + {d['thinking']} + {d['decision']}{title_line}\n\n"
+        f"━━━━━━━━━━━━━━\n"
+        f"{emoji} 昵称：{nickname}\n"
+        f"🏫 校区：{campus}{yayaid_line}\n"
+        f"━━━━━━━━━━━━━━\n"
+        f"输入 /开启鸭鸭 激活鸭鸭模式～"
+    )
+    return mbti_bar
 
 
 def adopt_new(user_id: str, attribute: str, campus: str) -> str:
@@ -138,6 +155,59 @@ def adopt_new(user_id: str, attribute: str, campus: str) -> str:
 
     nickname = profile['nickname'] if profile else '鸭鸭'
     return adopt(user_id, nickname, attribute, campus)
+
+
+def retest(user_id: str) -> str:
+    """
+    重测人格（对齐 TS handleRetest）
+    保留档案+编号+保底，只换人格维度，draw_type=retest
+    """
+    ensure_db()
+    profile = get_profile(user_id)
+    if not profile:
+        return "🦆 你还没有鸭鸭～"
+
+    nickname = profile['nickname']
+    attribute = profile['attribute']
+    campus = profile['campus']
+    old_mbti = f"{profile['social']} · {profile['thinking']} · {profile['decision']}"
+    old_yayaid = profile.get('yayaid', '')
+
+    # 用档案的保底计数器
+    pity = profile.get('pity_counter', 0)
+    ssr_pity = profile.get('ssr_pity_counter', 0)
+
+    d = perform_draw(pity, ssr_pity, fixed_attribute=attribute)
+    d['campus'] = campus
+
+    # 更新档案（只更新人格维度，保留编号和计数）
+    save_profile(user_id, nickname, attribute, d['social'], d['thinking'],
+                 d['decision'], campus)
+    # 记录抽卡（draw_type='retest'）
+    add_draw_record(user_id, 'retest', attribute, d['social'], d['thinking'],
+                    d['decision'], d['rarity'], d['title'],
+                    1 if d['is_pity'] else 0)
+    # 更新保底
+    update_profile_pity(user_id, d['new_pity_counter'], d['new_ssr_pity_counter'])
+
+    emoji = get_rarity_emoji(d['rarity'])
+    title_line = f"\n🏆 稀有称号：{d['title']}（{d['rarity']}）" if d['rarity'] != 'N' else ''
+    new_mbti = f"{d['social']} · {d['thinking']} · {d['decision']}"
+    yayaid_line = f"\n🏅 全校第 {old_yayaid} 只" if old_yayaid else ''
+
+    return (f"{emoji} 人格重测完成！\n"
+            f"━━━━━━━━━━━━━━\n"
+            f"属性：【{d['attribute']}】（不变）\n"
+            f"旧人格：{old_mbti}\n"
+            f"新人格：{new_mbti}{title_line}\n"
+            f"━━━━━━━━━━━━━━\n"
+            f"{emoji} 鸭鸭档案\n"
+            f"━━━━━━━━━━━━━━\n"
+            f"昵称：{nickname}\n"
+            f"属性：【{attribute}】\n"
+            f"人格：{d['personality_label']}\n"
+            f"校区：{campus}{yayaid_line}\n"
+            f"━━━━━━━━━━━━━━\n")
 
 
 def show_profile(user_id: str, is_open: bool = False) -> str:
@@ -358,7 +428,7 @@ def main():
         if not profile:
             print("🦆 你还没有鸭鸭～")
             return
-        print(adopt_new(user_id, profile['attribute'], profile['campus']))
+        print(retest(user_id))
 
     elif cmd == 'refresh':
         profile = get_profile(user_id)
