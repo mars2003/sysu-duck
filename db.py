@@ -98,14 +98,30 @@ def get_profile(user_id: str) -> Optional[Dict[str, Any]]:
 
 def save_profile(user_id: str, nickname: str, attribute: str, social: str,
                  thinking: str, decision: str, campus: str):
+    """保存档案 - 存在时保留 yayaid 和抽卡计数，只更新个人信息字段"""
     conn = get_conn()
     c = conn.cursor()
     now = ts()
-    c.execute('''INSERT OR REPLACE INTO duck_profiles 
-        (user_id, nickname, attribute, social, thinking, decision, campus,
-         total_draws, pity_counter, ssr_pity_counter, yayaid, created_at, updated_at)
-        VALUES (?,?,?,?,?,?,?,0,0,0,'',?,?)''',
-        (user_id, nickname, attribute, social, thinking, decision, campus, now, now))
+    
+    # 先查已有档案
+    c.execute('SELECT yayaid, total_draws, pity_counter, ssr_pity_counter FROM duck_profiles WHERE user_id=?', (user_id,))
+    row = c.fetchone()
+    
+    if row:
+        # 存在：保留计数，只更新个人信息 + 时间
+        existing_yayaid, total_draws, pity_counter, ssr_pity_counter = row
+        c.execute('''UPDATE duck_profiles SET 
+            nickname=?, attribute=?, social=?, thinking=?, decision=?, campus=?,
+            updated_at=?
+            WHERE user_id=?''',
+            (nickname, attribute, social, thinking, decision, campus, now, user_id))
+    else:
+        # 不存在：新建
+        c.execute('''INSERT INTO duck_profiles 
+            (user_id, nickname, attribute, social, thinking, decision, campus,
+             total_draws, pity_counter, ssr_pity_counter, yayaid, created_at, updated_at)
+            VALUES (?,?,?,?,?,?,?,0,0,0,'',?,?)''',
+            (user_id, nickname, attribute, social, thinking, decision, campus, now, now))
     conn.commit()
     conn.close()
 
