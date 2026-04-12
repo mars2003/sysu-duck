@@ -7,7 +7,8 @@ import os
 import time
 from typing import Optional, List, Dict, Any
 
-DB_PATH = os.environ.get('DUCK_DB_PATH', os.path.join(os.getcwd(), 'data', 'duck.db'))
+_DB_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
+DB_PATH = os.environ.get('DUCK_DB_PATH', os.path.join(_DB_DIR, 'duck.db'))
 
 def ensure_db():
     """确保 data 目录和数据库存在"""
