@@ -2,11 +2,13 @@
 """
 duck.py - 中大鸭鸭 Python 版
 主入口，支持 CLI 和工具调用
+与 TS src/tools/*.ts 完全对齐
 """
 import sys
 import urllib.request
 import json
 import os
+import random
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -15,6 +17,8 @@ from db import (
     get_profile, save_profile, delete_profile, update_profile_field,
     increment_draw, update_profile_pity, get_draw_history, add_draw_record,
     save_memory, get_memory, get_all_memories, delete_memory,
+    get_memory_by_canonical, get_seed_memories, get_seed_memory,
+    get_seed_memory_by_canonical, search_memories,
     init_seed_memories, ensure_db
 )
 from gacha import perform_draw, format_draw_result, get_rarity_emoji
@@ -28,7 +32,7 @@ def cmd_help():
 
 领养系列：
   adopt <nickname> <attribute> <campus>  创建鸭鸭
-  adopt_new <attribute> <campus>         重新领养
+  adopt_new <attribute> <campus>         重新领养（删旧档案，全新开始）
   profile                                  查看档案
   open                                     开启鸭鸭模式
 
@@ -50,22 +54,62 @@ def cmd_help():
 """
 
 
-def adopt(user_id: str, nickname: str, attribute: str, campus: str):
-    """创建鸭鸭 - 用户选择属性和校区，鸭鸭随机抽（保底贯通）"""
+# ============ 工具函数（对齐 TS validator.ts） ============
+
+ATTRIBUTES = ['呆萌', '叛逆', '睿智', '魅力']
+CAMPUSES = ['南校', '北校', '东校', '珠海', '深圳']
+
+
+def parse_adopt_args(args_text: str) -> dict:
+    """
+    智能解析领养参数（对齐 TS parseAdoptArgs）
+    自动识别昵称/属性/校区的位置
+    """
+    parts = args_text.strip().split()
+    result = {}
+    for part in parts:
+        if part in ATTRIBUTES and 'attribute' not in result:
+            result['attribute'] = part
+        elif part in CAMPUSES and 'campus' not in result:
+            result['campus'] = part
+        elif 'nickname' not in result:
+            result['nickname'] = part
+    return result
+
+
+def random_attribute() -> str:
+    """随机属性（对齐 TS randomAttribute）"""
+    return random.choice(ATTRIBUTES)
+
+
+def default_campus() -> str:
+    """默认校区（对齐 TS defaultCampus）"""
+    return '南校'
+
+
+# ============ 核心命令（对齐 TS tools/*.ts） ============
+
+def adopt(user_id: str, nickname: str, attribute: str, campus: str) -> str:
+    """
+    创建鸭鸭（对齐 TS handleAdopt mode=create）
+    全新抽卡 + 保底归零 + 领取新编号
+    """
     ensure_db()
 
-    # 读取当前保底计数器
-    pity, ssr_pity = get_profile_pity(user_id)
+    # 保底归零（全新开始）
+    pity, ssr_pity = 0, 0
 
-    # 执行抽卡（读保底 → 抽 → 更新保底）
-    d = perform_draw(pity, ssr_pity, fixed_attribute=attribute, fixed_campus=campus)
+    # 执行抽卡
+    d = perform_draw(pity, ssr_pity, fixed_attribute=attribute)
+    d['campus'] = campus  # 抽卡不决定校区，用用户指定的
 
     # 保存档案
     save_profile(user_id, nickname, attribute, d['social'], d['thinking'],
                  d['decision'], campus)
-    add_draw_record(user_id, d['rarity'], d['title'], attribute,
-                   d['social'], d['thinking'], d['decision'], campus)
-    increment_draw(user_id)
+    # 记录抽卡（draw_type='create'）
+    add_draw_record(user_id, 'create', attribute, d['social'], d['thinking'],
+                    d['decision'], d['rarity'], d['title'], 1 if d['is_pity'] else 0)
+    # 更新保底（虽然归零了，但保持接口一致）
     update_profile_pity(user_id, d['new_pity_counter'], d['new_ssr_pity_counter'])
 
     # 领取全校编号
@@ -80,21 +124,24 @@ def adopt(user_id: str, nickname: str, attribute: str, campus: str):
     return f"🎉 恭喜！你抽到了：\n\n{result}{yayaid_line}\n\n✅ 鸭鸭「{nickname}」创建成功！"
 
 
-def adopt_new(user_id: str, attribute: str, campus: str):
-    """重新领养 - 等同TS replace模式：删旧档案、全新抽卡、领新编号"""
+def adopt_new(user_id: str, attribute: str, campus: str) -> str:
+    """
+    重新领养（对齐 TS handleAdopt mode=replace）
+    删旧档案 + 全新抽卡 + 新编号 + 保底归零
+    """
     ensure_db()
     profile = get_profile(user_id)
 
-    # 如果有旧档案，先删掉
+    # 如果有旧档案，先删掉（TS replace 模式）
     if profile:
         delete_profile(user_id)
 
-    # 全新领养（抽卡+新编号+保底归零）
-    return adopt(user_id, profile['nickname'] if profile else '鸭鸭', attribute, campus)
+    nickname = profile['nickname'] if profile else '鸭鸭'
+    return adopt(user_id, nickname, attribute, campus)
 
 
-def show_profile(user_id: str, is_open: bool = False):
-    """查看档案"""
+def show_profile(user_id: str, is_open: bool = False) -> str:
+    """查看档案（对齐 TS handleGetProfile）"""
     ensure_db()
     profile = get_profile(user_id)
     if not profile:
@@ -138,65 +185,90 @@ def show_profile(user_id: str, is_open: bool = False):
     return result
 
 
-def cmd_recall(user_id: str, keyword: str):
+def cmd_recall(user_id: str, keyword: str) -> dict:
     """
-    查询记忆（模糊匹配 + 实体识别）
-    与 TS query_memory 对齐
+    查询记忆（对齐 TS handleQueryMemory 7步查询）
+    1. 种子记忆精确查
+    2. 种子记忆模糊查
+    3. 种子记忆 canonical 反向查
+    4. 用户个人记忆精确查
+    5. 用户个人记忆模糊查
+    6. 实体标准化后再查
+    7. 完全无记录返回实体标准化结果
     """
+    lower_kw = keyword.strip()
+
+    # 1. 种子记忆精确查
+    seed_exact = get_seed_memory(lower_kw)
+    if seed_exact:
+        return {'hit': True, 'canonical': seed_exact['canonical'],
+                'source': 'seed', 'search_hint': seed_exact['search_hint'],
+                'memory': seed_exact}
+
+    # 2. 种子记忆模糊查
+    seed_all = get_seed_memories()
+    seed_fuzzy = best_memory_match(lower_kw, seed_all)
+    if seed_fuzzy:
+        orig = next((s for s in seed_all if s['canonical'] == seed_fuzzy['answer']), None)
+        if orig:
+            return {'hit': True, 'canonical': orig['canonical'],
+                    'source': 'seed', 'search_hint': orig['search_hint'],
+                    'fuzzy': True, 'score': seed_fuzzy['score'], 'memory': orig}
+
+    # 3. 种子记忆 canonical 反向查
+    resolved = resolve_entity(lower_kw)
+    if resolved['canonical'] != lower_kw:
+        seed_by_canon = get_seed_memory_by_canonical(resolved['canonical'])
+        if seed_by_canon:
+            return {'hit': True, 'canonical': seed_by_canon['canonical'],
+                    'source': 'seed', 'search_hint': seed_by_canon['search_hint'],
+                    'entity_hint': resolved, 'memory': seed_by_canon}
+
+    # 4. 用户个人记忆精确查
+    user_exact = get_memory(user_id, lower_kw)
+    if user_exact:
+        return {'hit': True, 'canonical': user_exact['canonical'],
+                'source': 'user', 'search_hint': user_exact['search_hint'],
+                'memory': user_exact}
+
+    # 5. 用户个人记忆模糊查
+    user_all = get_all_memories(user_id)
+    user_fuzzy = best_memory_match(lower_kw, user_all)
+    if user_fuzzy:
+        orig = next((u for u in user_all if u['canonical'] == user_fuzzy['answer']), None)
+        if orig:
+            return {'hit': True, 'canonical': orig['canonical'],
+                    'source': 'user', 'search_hint': orig['search_hint'],
+                    'fuzzy': True, 'score': user_fuzzy['score'], 'memory': orig}
+
+    # 6. 实体标准化后再查（用户记忆 + canonical反向）
+    if resolved['canonical'] != lower_kw:
+        entity_mem = get_memory(user_id, resolved['canonical'])
+        if not entity_mem:
+            entity_mem = get_memory_by_canonical(user_id, resolved['canonical'])
+        if entity_mem:
+            return {'hit': True, 'canonical': entity_mem['canonical'],
+                    'source': 'user', 'search_hint': entity_mem['search_hint'],
+                    'entity_hint': resolved, 'memory': entity_mem}
+
+    # 7. 完全无记录，返回实体标准化结果
+    return {'hit': False, 'keyword': keyword,
+            'resolved': resolved, 'search_hint': resolved.get('hint', '')}
+
+
+def cmd_remember(user_id: str, keyword: str, canonical: str,
+                 search_hint: str = '', campus: str = '') -> str:
+    """记住知识（对齐 TS handleSaveMemory）"""
     ensure_db()
-
-    # 1. 实体识别（entities.json）
-    entity = resolve_entity(keyword)
-    if entity['canonical'] != keyword:
-        # 实体识别成功，用标准名查
-        mem = get_memory(user_id, entity['canonical'])
-        if mem:
-            return {'hit': True, 'canonical': mem['canonical'],
-                    'source': 'user', 'search_hint': entity.get('hint', ''),
-                    'entity_hint': entity}
-
-    # 2. 精确匹配用户记忆
-    mem = get_memory(user_id, keyword)
-    if mem:
-        return {'hit': True, 'canonical': mem['canonical'],
-                'source': 'user', 'search_hint': mem['search_hint']}
-
-    # 3. 精确匹配种子记忆
-    seed = get_memory('__seed__', keyword)
-    if seed:
-        return {'hit': True, 'canonical': seed['canonical'],
-                'source': 'seed', 'search_hint': seed['search_hint']}
-
-    # 4. 模糊匹配用户记忆
-    all_user = get_all_memories(user_id)
-    if all_user:
-        best = best_memory_match(keyword, all_user)
-        if best:
-            return {'hit': True, 'canonical': best['answer'],
-                    'source': 'user', 'search_hint': best['keyword'],
-                    'fuzzy': True, 'score': best['score']}
-
-    # 5. 模糊匹配种子记忆
-    all_seed = get_all_memories('__seed__')
-    if all_seed:
-        best = best_memory_match(keyword, all_seed)
-        if best:
-            return {'hit': True, 'canonical': best['answer'],
-                    'source': 'seed', 'search_hint': best['keyword'],
-                    'fuzzy': True, 'score': best['score']}
-
-    return {'hit': False, 'keyword': keyword}
-
-
-def cmd_remember(user_id: str, keyword: str, canonical: str, search_hint: str = '', campus: str = ''):
-    """记住知识"""
-    ensure_db()
+    profile = get_profile(user_id)
+    if not profile:
+        return "🦆 你还没有鸭鸭，先创建一只吧！"
     save_memory(user_id, keyword, canonical, search_hint, campus)
     return f"💾 已记住：「{keyword}」→ {canonical}"
 
 
-def cmd_rename(user_id: str, new_name: str):
-    """改名（带校验）"""
+def cmd_rename(user_id: str, new_name: str) -> str:
+    """改名（对齐 TS handleRename）"""
     ensure_db()
     valid, err = sanitize_nickname(new_name)
     if not valid:
@@ -208,25 +280,22 @@ def cmd_rename(user_id: str, new_name: str):
     return f"🦆 改名成功！以后就叫「{new_name.strip()}」啦～"
 
 
-def cmd_memories(user_id: str):
-    """列出所有记忆"""
+def cmd_memories(user_id: str) -> str:
+    """列出所有记忆（对齐 TS handleListMemories）"""
     ensure_db()
     memories = get_all_memories(user_id)
     if not memories:
         return "📭 还没有记住任何知识～"
-
     lines = ["📚 我的记忆：", ""]
     for i, m in enumerate(memories[:20], 1):
         lines.append(f"{i}. 「{m['keyword']}」→ {m['canonical']}")
-
     if len(memories) > 20:
         lines.append(f"\n...还有 {len(memories) - 20} 条记忆")
-
     return '\n'.join(lines)
 
 
-def cmd_forget(user_id: str, keyword: str):
-    """遗忘知识"""
+def cmd_forget(user_id: str, keyword: str) -> str:
+    """遗忘知识（对齐 TS handleForgetMemory）"""
     ensure_db()
     delete_memory(user_id, keyword)
     return f"🧹 好，「{keyword}」我忘了～"
@@ -255,19 +324,23 @@ def main():
     cmd = sys.argv[1].lower()
     user_id = os.environ.get('DUCK_USER_ID', 'test_user')
 
-    if cmd == 'adopt' and len(sys.argv) >= 5:
-        nickname = sys.argv[2]
-        attribute = sys.argv[3]
-        campus = sys.argv[4]
+    # ---- 智能解析参数 ----
+    raw_args = ' '.join(sys.argv[2:]) if len(sys.argv) > 2 else ''
+    parsed = parse_adopt_args(raw_args)
+
+    if cmd == 'adopt':
+        nickname = parsed.get('nickname', '鸭鸭')
+        attribute = parsed.get('attribute') or random_attribute()
+        campus = parsed.get('campus') or default_campus()
         valid, err = sanitize_nickname(nickname)
         if not valid:
             print(f"🦆 {err}")
             return
         print(adopt(user_id, nickname, attribute, campus))
 
-    elif cmd == 'adopt_new' and len(sys.argv) >= 4:
-        attribute = sys.argv[2]
-        campus = sys.argv[3]
+    elif cmd == 'adopt_new':
+        attribute = parsed.get('attribute') or random_attribute()
+        campus = parsed.get('campus') or default_campus()
         print(adopt_new(user_id, attribute, campus))
 
     elif cmd == 'profile':
@@ -285,9 +358,7 @@ def main():
         if not profile:
             print("🦆 你还没有鸭鸭～")
             return
-        attribute = profile['attribute']
-        campus = profile['campus']
-        print(adopt_new(user_id, attribute, campus))
+        print(adopt_new(user_id, profile['attribute'], profile['campus']))
 
     elif cmd == 'refresh':
         profile = get_profile(user_id)
