@@ -81,27 +81,16 @@ def adopt(user_id: str, nickname: str, attribute: str, campus: str):
 
 
 def adopt_new(user_id: str, attribute: str, campus: str):
-    """重新领养 - 保留昵称和主属性，重新抽取人格维度（保底贯通）"""
+    """重新领养 - 等同TS replace模式：删旧档案、全新抽卡、领新编号"""
     ensure_db()
     profile = get_profile(user_id)
-    if not profile:
-        return adopt(user_id, '鸭鸭', attribute, campus)
 
-    nickname = profile['nickname']
-    pity, ssr_pity = get_profile_pity(user_id)
+    # 如果有旧档案，先删掉
+    if profile:
+        delete_profile(user_id)
 
-    # 执行抽卡（保留保底计数）
-    d = perform_draw(pity, ssr_pity, fixed_attribute=attribute, fixed_campus=campus)
-
-    save_profile(user_id, nickname, attribute, d['social'], d['thinking'],
-                 d['decision'], campus)
-    add_draw_record(user_id, d['rarity'], d['title'], attribute,
-                   d['social'], d['thinking'], d['decision'], campus)
-    increment_draw(user_id)
-    update_profile_pity(user_id, d['new_pity_counter'], d['new_ssr_pity_counter'])
-
-    result = format_draw_result(d)
-    return f"🎉 新人格来啦！\n\n{result}\n\n✅ 档案已更新！"
+    # 全新领养（抽卡+新编号+保底归零）
+    return adopt(user_id, profile['nickname'] if profile else '鸭鸭', attribute, campus)
 
 
 def show_profile(user_id: str, is_open: bool = False):
