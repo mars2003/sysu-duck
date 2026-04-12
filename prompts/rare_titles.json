@@ -1,0 +1,39 @@
+{
+  "titles": [
+    {"key": "呆萌-I-S-F", "title": "治愈小天使", "rarity": "N"},
+    {"key": "呆萌-E-S-F", "title": "快乐小太阳", "rarity": "N"},
+    {"key": "呆萌-I-N-F", "title": "梦游诗人", "rarity": "N"},
+    {"key": "呆萌-E-N-F", "title": "彩虹棉花糖", "rarity": "N"},
+    {"key": "呆萌-I-S-T", "title": "安静小书虫", "rarity": "R"},
+    {"key": "呆萌-E-S-T", "title": "元气小铁憨", "rarity": "R"},
+    {"key": "呆萌-I-N-T", "title": "呆萌智囊团", "rarity": "R"},
+    {"key": "呆萌-E-N-T", "title": "反差萌达人", "rarity": "R"},
+
+    {"key": "叛逆-I-S-F", "title": "佛系小傲娇", "rarity": "N"},
+    {"key": "叛逆-E-S-F", "title": "热情小叛逆", "rarity": "N"},
+    {"key": "叛逆-I-N-F", "title": "独处幻想家", "rarity": "N"},
+    {"key": "叛逆-E-N-F", "title": "闪亮叛逆者", "rarity": "N"},
+    {"key": "叛逆-I-S-T", "title": "冷酷独行侠", "rarity": "R"},
+    {"key": "叛逆-E-S-T", "title": "行动反骨仔", "rarity": "R"},
+    {"key": "叛逆-I-N-T", "title": "犀利观察者", "rarity": "R"},
+    {"key": "叛逆-E-N-T", "title": "反叛先知", "rarity": "SSR"},
+
+    {"key": "睿智-I-S-F", "title": "温柔智囊", "rarity": "N"},
+    {"key": "睿智-E-S-F", "title": "博学热心肠", "rarity": "N"},
+    {"key": "睿智-I-N-F", "title": "深渊思考者", "rarity": "R"},
+    {"key": "睿智-E-N-F", "title": "魅力思想家", "rarity": "R"},
+    {"key": "睿智-I-S-T", "title": "睿智评论家", "rarity": "N"},
+    {"key": "睿智-E-S-T", "title": "学霸鸭", "rarity": "N"},
+    {"key": "睿智-I-N-T", "title": "冷面军师", "rarity": "R"},
+    {"key": "睿智-E-N-T", "title": "全知先知", "rarity": "SR"},
+
+    {"key": "魅力-I-S-F", "title": "治愈系女神", "rarity": "N"},
+    {"key": "魅力-E-S-F", "title": "万人迷", "rarity": "N"},
+    {"key": "魅力-I-N-F", "title": "神秘感美人", "rarity": "R"},
+    {"key": "魅力-E-N-F", "title": "灵魂共鸣者", "rarity": "SSR"},
+    {"key": "魅力-I-S-T", "title": "低调实力派", "rarity": "N"},
+    {"key": "魅力-E-S-T", "title": "务实领袖", "rarity": "N"},
+    {"key": "魅力-I-N-T", "title": "智慧灯塔", "rarity": "R"},
+    {"key": "魅力-E-N-T", "title": "完美指挥官", "rarity": "SR"}
+  ]
+}

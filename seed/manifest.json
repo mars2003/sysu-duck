@@ -1,0 +1,17 @@
+{
+  "version": "1.3",
+  "updated_at": "2026-04-12",
+  "description": "中大鸭鸭种子记忆 v1.2",
+  "stats": {
+    "total": 54,
+    "by_campus": {
+      "全校": 33,
+      "南校": 6,
+      "北校": 4,
+      "东校": 3,
+      "珠海": 4,
+      "深圳": 4
+    }
+  },
+  "changes": ["v1.3: 移除无效campus=广州，改用全校", "v1.2: campus名称与duck_profiles/entities.json统一", "v1.1: 初始版本"]
+}
