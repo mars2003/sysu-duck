@@ -23,7 +23,9 @@ def load_self_intros():
     return load_json('self_intro')
 
 def load_rare_titles():
-    return load_json('rare_titles')
+    raw = load_json('rare_titles')
+    # 构建 key -> title 映射: "呆萌-E-N-T" -> "反差萌达人"
+    return {t['key']: t['title'] for t in raw.get('titles', [])}
 
 def draw_once(total_draws: int, pity_counter: int, ssr_pity_counter: int):
     """单抽，返回 (rarity, is_pity)"""
@@ -56,19 +58,19 @@ def make_mbti():
     decision = random.choice(DECISION_LIST)   # T or F
     return social, thinking, decision
 
-def draw_rarity() -> dict:
+def draw_rarity(fixed_attribute: str = None, fixed_campus: str = None) -> dict:
     """
     执行一次抽卡，返回完整档案
-    返回: {
-        rarity, title, attribute, social, thinking, decision, campus, mbti_key, personality_label
-    }
+    fixed_attribute: 如果传入则使用，不随机（领养时用户已选）
+    fixed_campus: 如果传入则使用，不随机
+    返回: {rarity, title, attribute, social, thinking, decision, campus, mbti_key, personality_label}
     """
     # 先决定稀有度
     rarity, _ = draw_once(0, 0, 0)
     
     # 决定属性（4选1）
     attributes = ['呆萌', '叛逆', '睿智', '魅力']
-    attribute = random.choice(attributes)
+    attribute = fixed_attribute or random.choice(attributes)
     
     # 决定 MBTI 人格
     social, thinking, decision = make_mbti()
@@ -78,13 +80,16 @@ def draw_rarity() -> dict:
     labels = load_personality_labels()
     personality_label = labels.get(f'{attribute}-{mbti_key}', mbti_key)
     
-    # 查稀有称号
+    # 查稀有称号（key格式：呆萌-E-N-T）
     titles = load_rare_titles()
     title = titles.get(f'{attribute}-{mbti_key}', f'{attribute}鸭')
     
-    # 校区
-    campuses = ['南校', '北校', '东校', '珠海', '深圳', '全校']
-    campus = random.choice(campuses)
+    # 校区（优先用用户指定的）
+    if fixed_campus:
+        campus = fixed_campus
+    else:
+        campuses = ['南校', '北校', '东校', '珠海', '深圳', '全校']
+        campus = random.choice(campuses)
     
     return {
         'rarity': rarity,

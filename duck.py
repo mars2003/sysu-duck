@@ -48,12 +48,13 @@ def cmd_help():
 """
 
 def adopt(user_id: str, nickname: str, attribute: str, campus: str):
-    """创建鸭鸭"""
+    """创建鸭鸭 - 用户选择属性和校区，鸭鸭随机抽"""
     ensure_db()
-    d = draw_rarity()
+    # 使用用户选择的属性和校区，不随机
+    d = draw_rarity(fixed_attribute=attribute, fixed_campus=campus)
     save_profile(user_id, nickname, attribute, d['social'], d['thinking'],
                  d['decision'], campus)
-    add_draw_record(user_id, d['rarity'], d['title'], d['attribute'],
+    add_draw_record(user_id, d['rarity'], d['title'], attribute,
                    d['social'], d['thinking'], d['decision'], campus)
     increment_draw(user_id)
     
@@ -61,18 +62,23 @@ def adopt(user_id: str, nickname: str, attribute: str, campus: str):
     return f"🎉 恭喜！你抽到了：\n\n{result}\n\n✅ 鸭鸭「{nickname}」创建成功！"
 
 def adopt_new(user_id: str, attribute: str, campus: str):
-    """重新领养"""
+    """重新领养 - 保留昵称和主属性，重新抽取人格维度"""
     ensure_db()
-    delete_profile(user_id)
-    d = draw_rarity()
-    save_profile(user_id, '鸭鸭', attribute, d['social'], d['thinking'],
+    profile = get_profile(user_id)
+    if not profile:
+        return adopt(user_id, '鸭鸭', attribute, campus)
+    
+    # 保留昵称和校区，只换人格维度
+    nickname = profile['nickname']
+    d = draw_rarity(fixed_attribute=attribute, fixed_campus=campus)
+    save_profile(user_id, nickname, attribute, d['social'], d['thinking'],
                  d['decision'], campus)
-    add_draw_record(user_id, d['rarity'], d['title'], d['attribute'],
+    add_draw_record(user_id, d['rarity'], d['title'], attribute,
                    d['social'], d['thinking'], d['decision'], campus)
     increment_draw(user_id)
     
     result = format_draw_result(d)
-    return f"🎉 新鸭鸭来啦！\n\n{result}\n\n✅ 档案已更新！"
+    return f"🎉 新人格来啦！\n\n{result}\n\n✅ 档案已更新！"
 
 def show_profile(user_id: str, is_open: bool = False):
     """查看档案"""
