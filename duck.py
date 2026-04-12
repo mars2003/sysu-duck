@@ -58,8 +58,16 @@ def adopt(user_id: str, nickname: str, attribute: str, campus: str):
                    d['social'], d['thinking'], d['decision'], campus)
     increment_draw(user_id)
     
+    # 领取全校编号
+    yid = get_next_yayaid()
+    if yid:
+        update_profile_field(user_id, 'yayaid', str(yid))
+        yayaid_line = f"\n🏅 全校第 {yid} 只"
+    else:
+        yayaid_line = ""
+    
     result = format_draw_result(d)
-    return f"🎉 恭喜！你抽到了：\n\n{result}\n\n✅ 鸭鸭「{nickname}」创建成功！"
+    return f"🎉 恭喜！你抽到了：\n\n{result}{yayaid_line}\n\n✅ 鸭鸭「{nickname}」创建成功！"
 
 def adopt_new(user_id: str, attribute: str, campus: str):
     """重新领养 - 保留昵称和主属性，重新抽取人格维度"""
