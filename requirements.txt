@@ -1,0 +1,7 @@
+# 中大鸭鸭 — Python 依赖
+#
+# 硬性要求：Python >= 3.9（与 pyproject.toml 中 requires-python 一致）
+#
+# 运行时仅使用标准库（sqlite3、urllib、json、difflib 等），无第三方包。
+# 本文件可配合 `pip install -r requirements.txt` 使用；当前无包可装，仅作版本与说明的显式记录。
+#

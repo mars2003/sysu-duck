@@ -4,7 +4,12 @@
 
 ## 依赖
 
-仅使用 Python 3 标准库（`sqlite3`、`urllib`、`json`、`difflib` 等），无需 `pip install`。
+| 项 | 说明 |
+|----|------|
+| **Python** | **>= 3.9**（见根目录 [`pyproject.toml`](pyproject.toml) 中 `requires-python`，与 [`requirements.txt`](requirements.txt) 说明一致） |
+| **PyPI 包** | 无；仅标准库（`sqlite3`、`urllib`、`json`、`difflib` 等） |
+
+安装第三方包：**不需要**。若用 `uv` / `pip` 管理环境，可先 `pip install -r requirements.txt`（当前无包，仅锁定「无第三方依赖」的约定）。
 
 ## 运行
 

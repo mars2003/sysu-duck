@@ -3,6 +3,8 @@ db.py - 鸭鸭数据库操作
 纯 Python + sqlite3，内置无需安装额外模块
 与 TS src/lib/db.ts 完全对齐
 """
+from __future__ import annotations
+
 import sqlite3
 import os
 import time

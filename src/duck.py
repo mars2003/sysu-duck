@@ -4,6 +4,8 @@ duck.py - 中大鸭鸭 Python 版
 主入口，支持 CLI 和工具调用
 与 TS src/tools/*.ts 完全对齐
 """
+from __future__ import annotations
+
 import sys
 import urllib.request
 import urllib.error
@@ -26,6 +28,21 @@ from src.db import (
 from src.gacha import perform_draw, format_draw_result, get_rarity_emoji
 from src.utils import sanitize_nickname
 from src.entities import resolve_entity, best_memory_match
+
+# 与类型标注（PEP 585 / 604 + __future__.annotations）及依赖库行为一致的可维护下限
+_MIN_PYTHON = (3, 9)
+
+
+def _check_python_version() -> None:
+    if sys.version_info < _MIN_PYTHON:
+        major, minor = _MIN_PYTHON[0], _MIN_PYTHON[1]
+        cur = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
+        print(
+            f"🦆 需要 Python {major}.{minor}+（当前 {cur}）。"
+            " 请升级解释器或使用 pyenv、uv、conda 等安装较新版本。",
+            file=sys.stderr,
+        )
+        raise SystemExit(2)
 
 
 def cmd_help():
@@ -426,6 +443,7 @@ def get_next_yayaid() -> int:
 
 
 def main():
+    _check_python_version()
     ensure_db()
 
     if len(sys.argv) < 2:

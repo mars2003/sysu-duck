@@ -26,7 +26,7 @@ description: 中山大学AI陪伴鸭鸭。当用户输入/领养鸭鸭、/开启
 DUCK_USER_ID=<user_id> python3 duck.py <命令> [参数]
 ```
 
-**运行环境**：Python **3.9+**（代码使用 `from __future__ import annotations`，在 3.9 下也可正常使用 `list[str]`、`X | Y` 等类型标注；若仅用 3.10+ 可忽略此说明）。静态资源位于仓库根目录的 `assets/`，脚本在 `src/` 下运行时会自动解析到上级目录的 `assets/`。
+**运行环境**：**官方支持 Python 3.9+**（硬性要求以根目录 [`pyproject.toml`](pyproject.toml) 的 `requires-python` 与 [`requirements.txt`](requirements.txt) 说明为准；无第三方 PyPI 依赖）。`duck.py` 启动时会校验版本，低于 3.9 会给出明确提示并退出（避免各环境默认 `python3` 版本不一却拖到运行中才失败）。各模块使用 `from __future__ import annotations`，在 3.9 上可安全使用 `list[str]`、`X | Y` 等标注而无需升级到 3.10。静态资源在仓库根目录 `assets/`，从 `src/` 运行时自动解析 `../assets/`。更低版本未纳入持续测试，部署时请以 3.9+ 为准。
 
 环境变量：
 
