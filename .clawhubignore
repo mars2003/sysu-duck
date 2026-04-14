@@ -1,0 +1,39 @@
+# ClawHub CLI 发布/上传时使用的忽略规则（见 clawhub dist/skills.js，仅识别本文件与 .gitignore，不读取 .clawignore）。
+# 技能说明与运行时仍依赖：SKILL.md、duck.py、src/*.py、assets/（含 seed CSV，db 会读取）、references/、scripts/ — 下列条目勿误伤这些路径。
+
+# Git / 依赖目录
+.git/
+node_modules/
+
+# Python 缓存与测试
+__pycache__/
+**/__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+
+tests/
+
+# 本地数据与数据库（发布包不应含用户数据）
+data/
+*.db
+src/data/
+
+# 虚拟环境与密钥
+venv/
+.venv/
+.env
+.env.*
+
+# IDE
+.idea/
+.vscode/
+
+# 系统垃圾
+.DS_Store
+Thumbs.db
+
+# 与仓库文档重复时可减轻索引体量（可选；安装后仍以 SKILL.md 为主）
+# README.md
