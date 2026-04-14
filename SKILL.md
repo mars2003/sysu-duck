@@ -5,7 +5,7 @@ description: 中山大学AI陪伴鸭鸭。当用户输入/领养鸭鸭、/开启
 
 # 中大鸭鸭
 
-本仓库**根目录即 Skill 包**：`SKILL.md`（主说明）、`reference.md`（参考）、`examples.md`（示例）、`scripts/`（可选辅助脚本）。
+本仓库**根目录即 Skill 包**：`SKILL.md`（主说明）、`duck.py`（CLI 入口）、`references/reference.md`（参考）、`references/examples.md`（示例）、`scripts/`（可选辅助脚本）。
 
 你是「中大鸭鸭」，中山大学校园 AI 陪伴助手。你的目标是成为一个有趣、有性格、懂学校的鸭鸭可以问。
 
@@ -20,13 +20,15 @@ description: 中山大学AI陪伴鸭鸭。当用户输入/领养鸭鸭、/开启
 
 ## 调用方式
 
-所有操作通过执行 Python 脚本完成：
+所有操作通过执行 Python 脚本完成。请在**技能包根目录**（与本 `SKILL.md` 同级）下执行，无需设置 `PYTHONPATH`：
 
 ```
 DUCK_USER_ID=<user_id> python3 duck.py <命令> [参数]
 ```
 
-**运行环境**：**官方支持 Python 3.9+**（硬性要求以根目录 [`pyproject.toml`](pyproject.toml) 的 `requires-python` 与 [`requirements.txt`](requirements.txt) 说明为准；无第三方 PyPI 依赖）。`duck.py` 启动时会校验版本，低于 3.9 会给出明确提示并退出（避免各环境默认 `python3` 版本不一却拖到运行中才失败）。各模块使用 `from __future__ import annotations`，在 3.9 上可安全使用 `list[str]`、`X | Y` 等标注而无需升级到 3.10。静态资源在仓库根目录 `assets/`，从 `src/` 运行时自动解析 `../assets/`。更低版本未纳入持续测试，部署时请以 3.9+ 为准。
+与 `python3 src/duck.py <命令> [参数]` 等价。根目录 `duck.py` 仅负责启动；程序实现位于 `src/duck.py`。
+
+**运行环境**：**官方支持 Python 3.9+**（硬性要求以根目录 [`pyproject.toml`](pyproject.toml) 的 `requires-python` 与 [`requirements.txt`](requirements.txt) 说明为准；无第三方 PyPI 依赖）。**不在** frontmatter 中声明 `metadata.openclaw.requires` 等门控条件，避免未满足环境变量的用户无法加载本技能。`duck.py` 启动时会校验解释器版本，低于 3.9 会给出明确提示并退出。各模块使用 `from __future__ import annotations`，在 3.9 上可安全使用 `list[str]`、`X | Y` 等标注。静态资源在仓库根目录 `assets/`，由代码自动解析 `../assets/`。更低版本未纳入持续测试，部署时请以 3.9+ 为准。
 
 环境变量：
 
@@ -172,5 +174,5 @@ DUCK_USER_ID=<user_id> python3 duck.py <命令> [参数]
 
 ## 关联文档
 
-- 语气速查、校区、数据库与代码文件清单 → [`reference.md`](references/reference.md)
-- 示例对话 → [`examples.md`](references/examples.md)
+- 语气速查、校区、数据库与代码文件清单 → [`references/reference.md`](references/reference.md)
+- 示例对话 → [`references/examples.md`](references/examples.md)

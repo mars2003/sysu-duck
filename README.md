@@ -13,10 +13,17 @@
 
 ## 运行
 
+在**本仓库根目录**（含 `SKILL.md`、`duck.py` 的目录）下执行，**无需**设置 `PYTHONPATH`：
+
 ```bash
+cd /path/to/sysu-duck
 export DUCK_USER_ID=你的用户ID
 python3 duck.py help
 ```
+
+与上面等价，也可直接：`python3 src/duck.py help`。
+
+说明：根目录的 `duck.py` 仅为 CLI 入口；若在其它 Python 代码中引用实现，请使用 `import src.duck`（勿 `import duck`，否则会指向根入口 shim）。
 
 可选环境变量：
 
@@ -27,6 +34,8 @@ python3 duck.py help
 - `DUCK_YAYAID_BACKOFF`：重试间隔基数秒，线性递增（默认 `0.35`）
 
 ## 测试
+
+在仓库根目录执行：
 
 ```bash
 python3 -m unittest discover -s tests -v
@@ -41,10 +50,11 @@ python3 -m unittest discover -s tests -v
 | 路径 | 说明 |
 |------|------|
 | `SKILL.md` | 主说明（触发条件、规则、调用方式） |
-| `reference.md` | 语气速查、校区、数据库与核心文件 |
-| `examples.md` | 示例对话 |
+| `duck.py` | 根目录 CLI 入口（调用 `src/duck.py`） |
+| `references/reference.md` | 语气速查、校区、数据库与核心文件 |
+| `references/examples.md` | 示例对话 |
 | `scripts/` | 可选辅助脚本（与 `duck.py` 编排配合时可放此处） |
 
-将本目录作为技能源导入工具时，指向 **`SKILL.md`** 即可；需要细节时再读 `reference.md` / `examples.md`。
+将本目录作为技能源导入工具时，指向 **`SKILL.md`** 即可；需要细节时再读 `references/reference.md` / `references/examples.md`。
 
 **作者**: Mars · **日期**: 2026-04-14

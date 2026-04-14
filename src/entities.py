@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import json
 import os
-from utils import SequenceMatcher, fuzzy_match
+from src.utils import SequenceMatcher, fuzzy_match
 
 _entities_cache = None
 

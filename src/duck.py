@@ -14,7 +14,9 @@ import os
 import random
 import time
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+# 包根目录（含 `src/`、`assets/` 的仓库根），保证 `from src.*` 与资源路径一致
+_REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, _REPO_ROOT)
 
 from src.db import (
     get_profile_yayaid, get_profile_pity,

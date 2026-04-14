@@ -12,7 +12,7 @@ class TestCmdRecallIntegration(unittest.TestCase):
         os.close(cls._fd)
         os.environ['DUCK_DB_PATH'] = cls.db_path
         import src.db as db
-        import duck
+        import src.duck as duck
         importlib.reload(db)
         importlib.reload(duck)
         cls.db = db
