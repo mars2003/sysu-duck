@@ -1,6 +1,6 @@
 # 中大鸭鸭
 
-中山大学校园 AI 陪伴「鸭鸭」：本地 SQLite 档案、抽卡人格、会话记忆与 CLI。
+中山大学校园 AI 陪伴「鸭鸭」：本地 SQLite 档案、抽卡人格、会话记忆与 CLI。 SYSU Campus AI companion duck: local SQLite profiles, gacha personalities, conversation memory, and CLI.
 
 ## 依赖
 
