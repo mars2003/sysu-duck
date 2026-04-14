@@ -14,7 +14,7 @@ import time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from db import (
+from src.db import (
     get_profile_yayaid, get_profile_pity,
     get_profile, save_profile, delete_profile, update_profile_field,
     increment_draw, update_profile_pity, get_draw_history, add_draw_record,
@@ -23,9 +23,9 @@ from db import (
     get_seed_memory_by_canonical, search_memories,
     init_seed_memories, ensure_db
 )
-from gacha import perform_draw, format_draw_result, get_rarity_emoji
-from utils import sanitize_nickname
-from entities import resolve_entity, best_memory_match
+from src.gacha import perform_draw, format_draw_result, get_rarity_emoji
+from src.utils import sanitize_nickname
+from src.entities import resolve_entity, best_memory_match
 
 
 def cmd_help():
@@ -223,7 +223,7 @@ def show_profile(user_id: str, is_open: bool = False) -> str:
     latest = draws[0] if draws else {}
     emoji = get_rarity_emoji(latest.get('rarity', 'N'))
 
-    from gacha import load_personality_labels, load_self_intros
+    from src.gacha import load_personality_labels, load_self_intros
     labels = load_personality_labels()
     intros = load_self_intros()
     mbti_key = f"{latest.get('social', 'E')}-{latest.get('thinking', 'N')}-{latest.get('decision', 'T')}"

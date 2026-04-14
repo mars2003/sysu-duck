@@ -1,7 +1,7 @@
 """抽卡与稀有度合并逻辑测试。"""
 import unittest
 
-from gacha import merge_draw_and_title_rarity, rarity_rank, update_pity
+from src.gacha import merge_draw_and_title_rarity, rarity_rank, update_pity
 
 
 class TestGacha(unittest.TestCase):

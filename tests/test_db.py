@@ -6,7 +6,7 @@ import unittest
 
 class TestDbFieldWhitelist(unittest.TestCase):
     def test_rejects_unknown_field_without_touching_db(self):
-        import db as db_mod
+        import src.db as db_mod
 
         with self.assertRaises(ValueError) as ctx:
             db_mod.update_profile_field('any_user', "campus='x", 'y')

@@ -11,7 +11,7 @@ class TestCmdRecallIntegration(unittest.TestCase):
         cls._fd, cls.db_path = tempfile.mkstemp(suffix='.duck.db')
         os.close(cls._fd)
         os.environ['DUCK_DB_PATH'] = cls.db_path
-        import db
+        import src.db as db
         import duck
         importlib.reload(db)
         importlib.reload(duck)
@@ -33,7 +33,7 @@ class TestCmdRecallIntegration(unittest.TestCase):
         except OSError:
             pass
         os.environ.pop('DUCK_DB_PATH', None)
-        import db
+        import src.db as db
         importlib.reload(db)
 
     def test_hit_seed_exact(self):

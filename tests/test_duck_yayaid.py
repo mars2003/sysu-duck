@@ -2,7 +2,7 @@
 import unittest
 from unittest.mock import patch, MagicMock
 
-import duck
+import src.duck as duck
 
 
 class TestParseYayaidBody(unittest.TestCase):

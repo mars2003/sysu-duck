@@ -14,7 +14,7 @@ DECISION_LIST = ['T', 'F']  # thinking vs feeling
 
 
 def load_json(name: str) -> dict:
-    path = os.path.join(os.path.dirname(__file__), 'prompts', f'{name}.json')
+    path = os.path.join(os.path.dirname(__file__), 'assets', 'prompts', f'{name}.json')
     with open(path, encoding='utf-8') as f:
         return json.load(f)
 

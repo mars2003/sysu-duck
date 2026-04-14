@@ -12,7 +12,7 @@ class TestDbExecuteRollback(unittest.TestCase):
         os.close(fd)
         os.environ['DUCK_DB_PATH'] = path
         try:
-            import db
+            import src.db as db
             importlib.reload(db)
             db.ensure_db()
 
@@ -49,7 +49,7 @@ class TestDbExecuteRollback(unittest.TestCase):
             except OSError:
                 pass
             os.environ.pop('DUCK_DB_PATH', None)
-            import db as db_mod
+            import src.db as db_mod
             importlib.reload(db_mod)
 
 

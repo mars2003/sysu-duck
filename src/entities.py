@@ -10,8 +10,8 @@ _entities_cache = None
 
 def get_entities_path() -> str:
     candidates = [
-        os.path.join(os.path.dirname(__file__), 'config', 'entities.json'),
-        os.path.join(os.path.dirname(__file__), '..', 'config', 'entities.json'),
+        os.path.join(os.path.dirname(__file__), 'assets', 'config', 'entities.json'),
+        os.path.join(os.path.dirname(__file__), '..', 'assets', 'config', 'entities.json'),
     ]
     for p in candidates:
         if os.path.exists(p):

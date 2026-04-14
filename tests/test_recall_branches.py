@@ -8,8 +8,8 @@ from unittest.mock import patch
 
 def _reload_db_duck(path: str):
     os.environ['DUCK_DB_PATH'] = path
-    import db
-    import duck
+    import src.db as db
+    import src.duck as duck
     importlib.reload(db)
     importlib.reload(duck)
     return db, duck
@@ -32,7 +32,7 @@ class TestRecallFuzzyAndEntity(unittest.TestCase):
         except OSError:
             pass
         os.environ.pop('DUCK_DB_PATH', None)
-        import db
+        import src.db as db
         importlib.reload(db)
 
     def setUp(self):

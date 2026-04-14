@@ -1,7 +1,7 @@
 """工具函数测试。"""
 import unittest
 
-from utils import SequenceMatcher, sanitize_nickname, similarity_ratio
+from src.utils import SequenceMatcher, sanitize_nickname, similarity_ratio
 
 
 class TestUtils(unittest.TestCase):

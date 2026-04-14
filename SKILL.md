@@ -170,5 +170,5 @@ DUCK_USER_ID=<user_id> python3 duck.py <命令> [参数]
 
 ## 关联文档
 
-- 语气速查、校区、数据库与代码文件清单 → [`reference.md`](reference.md)
-- 示例对话 → [`examples.md`](examples.md)
+- 语气速查、校区、数据库与代码文件清单 → [`reference.md`](references/reference.md)
+- 示例对话 → [`examples.md`](references/examples.md)
