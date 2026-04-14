@@ -27,6 +27,8 @@ python3 duck.py help
 python3 -m unittest discover -s tests -v
 ```
 
+`db.py` 中数据库访问通过 `db_execute()` 上下文管理：写入路径自动 `commit` / 异常 `rollback`，避免漏关连接或半提交。
+
 ## 说明文档
 
 智能体编排规范见仓库内 `SKILL.md`。
