@@ -1,52 +1,27 @@
 """
 utils.py - 通用工具函数
 """
-import os
+import difflib
 import re
 
-# Python difflib.SequenceMatcher 的纯 Python 实现
+
+def similarity_ratio(a: str, b: str) -> float:
+    """
+    两段文本的相似度 [0,1]，保留两位小数；使用标准库 difflib，比手写字符扫窗更稳健。
+    """
+    if not a and not b:
+        return 1.0
+    if not a or not b:
+        return 0.0
+    return round(difflib.SequenceMatcher(None, a.lower(), b.lower()).ratio(), 2)
+
+
 def SequenceMatcher(a: str, b: str) -> dict:
     """
-    返回 {ratio: float}，类似 Python difflib.SequenceMatcher
+    兼容旧调用：SequenceMatcher(a, b)['ratio']()
     """
-    s1 = a.lower()
-    s2 = b.lower()
-
-    if s1 == s2:
-        return {'ratio': lambda: 1.0}
-
-    m = min(len(s1), len(s2))
-    if m == 0:
-        return {'ratio': lambda: 0.0}
-
-    # 简单版：字符级相似度
-    matches = 0
-    i, j = 0, 0
-    visited = set()
-
-    while i < len(s1) and j < len(s2):
-        if s1[i] == s2[j]:
-            matches += 1
-            i += 1
-            j += 1
-        else:
-            found = False
-            for ki in range(i + 1, min(i + 3, len(s1))):
-                for lj in range(j + 1, min(j + 3, len(s2))):
-                    key = f'{ki},{lj}'
-                    if key not in visited and s1[ki] == s2[lj]:
-                        visited.add(key)
-                        i = ki
-                        j = lj
-                        found = True
-                        break
-                if found:
-                    break
-            if not found:
-                break
-
-    ratio = (2.0 * matches) / (len(s1) + len(s2))
-    return {'ratio': lambda: round(ratio, 2)}
+    r = similarity_ratio(a, b)
+    return {'ratio': (lambda v=r: v)}
 
 
 def fuzzy_match(text: str, keywords: list[str], threshold: float = 0.6) -> tuple[str, float] | None:

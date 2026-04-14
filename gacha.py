@@ -50,6 +50,15 @@ def rarity_rank(r: str) -> int:
     return {'N': 1, 'R': 2, 'SR': 3, 'SSR': 4}.get(r, 0)
 
 
+def merge_draw_and_title_rarity(draw_rarity: str, title_rarity: str) -> str:
+    """
+    抽卡稀有度与组合称号配置的稀有度取较高者（对齐 TS performDraw）。
+    """
+    if rarity_rank(title_rarity) > rarity_rank(draw_rarity):
+        return title_rarity
+    return draw_rarity
+
+
 def _draw_once(pity_counter: int, ssr_pity_counter: int) -> tuple[str, bool]:
     """
     内部单抽逻辑（对齐 TS drawRarity）
@@ -139,9 +148,8 @@ def perform_draw(pity_counter: int, ssr_pity_counter: int,
     # 5. 查稀有称号（TS calculateTitle 逻辑：取 rarity 与组合rarity 的更高者）
     title, title_rarity = calculate_title(attribute, social, thinking, decision)
 
-    # 6. 如果组合计算的稀有度高于抽卡结果，取更高的
-    final_rarity = rarity if rarity_rank(title_rarity) > rarity_rank(rarity) else rarity
-    # 如果最终稀有度是SSR，而title不是SSR，用title的title
+    # 6. 抽卡稀有度与称号稀有度合并为最终展示稀有度
+    final_rarity = merge_draw_and_title_rarity(rarity, title_rarity)
     final_title = title
 
     # 7. 更新保底

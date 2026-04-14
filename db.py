@@ -11,6 +11,9 @@ from typing import Optional, List, Dict, Any
 _DB_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
 DB_PATH = os.environ.get('DUCK_DB_PATH', os.path.join(_DB_DIR, 'duck.db'))
 
+# update_profile_field 仅允许白名单字段，防止 SQL 注入与误改核心列
+_PROFILE_UPDATABLE_FIELDS = frozenset({'nickname', 'yayaid'})
+
 
 def ensure_db():
     """确保 data 目录和数据库存在"""
@@ -138,6 +141,8 @@ def delete_profile(user_id: str):
 
 
 def update_profile_field(user_id: str, field: str, value: str):
+    if field not in _PROFILE_UPDATABLE_FIELDS:
+        raise ValueError(f'不允许更新的字段: {field}')
     conn = get_conn()
     c = conn.cursor()
     c.execute(f'UPDATE duck_profiles SET {field}=?, updated_at=? WHERE user_id=?',
