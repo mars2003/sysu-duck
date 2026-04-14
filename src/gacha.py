@@ -75,7 +75,7 @@ def _draw_once(pity_counter: int, ssr_pity_counter: int) -> tuple[str, bool]:
     - 普通抽 → N/R/SR/SSR 随机
     """
     if ssr_pity_counter >= 100:
-        # SSR保底触发 → SR（降级，对齐TS）
+        # SSR保底触发 → SR（降级）
         return 'SR', True
     if pity_counter >= 10:
         # SR保底触发 → R/SR/SSR 70/25/5

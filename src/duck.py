@@ -2,7 +2,6 @@
 """
 duck.py - 中大鸭鸭 Python 版
 主入口，支持 CLI 和工具调用
-与 TS src/tools/*.ts 完全对齐
 """
 from __future__ import annotations
 
@@ -77,7 +76,7 @@ def cmd_help():
 """
 
 
-# ============ 工具函数（对齐 TS validator.ts） ============
+# ============ 工具函数 ============
 
 ATTRIBUTES = ['呆萌', '叛逆', '睿智', '魅力']
 CAMPUSES = ['南校', '北校', '东校', '珠海', '深圳']
@@ -85,7 +84,7 @@ CAMPUSES = ['南校', '北校', '东校', '珠海', '深圳']
 
 def parse_adopt_args(args_text: str) -> dict:
     """
-    智能解析领养参数（对齐 TS parseAdoptArgs）
+    智能解析领养参数
     自动识别昵称/属性/校区的位置
     """
     parts = args_text.strip().split()
@@ -101,20 +100,20 @@ def parse_adopt_args(args_text: str) -> dict:
 
 
 def random_attribute() -> str:
-    """随机属性（对齐 TS randomAttribute）"""
+    """随机属性"""
     return random.choice(ATTRIBUTES)
 
 
 def default_campus() -> str:
-    """默认校区（对齐 TS defaultCampus）"""
+    """默认校区"""
     return '南校'
 
 
-# ============ 核心命令（对齐 TS tools/*.ts） ============
+# ============ 核心命令 ============
 
 def adopt(user_id: str, nickname: str, attribute: str, campus: str) -> str:
     """
-    创建鸭鸭（对齐 TS handleAdopt mode=create）
+    创建鸭鸭
     全新抽卡 + 保底归零 + 领取新编号
     """
     ensure_db()
@@ -166,7 +165,7 @@ def adopt(user_id: str, nickname: str, attribute: str, campus: str) -> str:
 
 def adopt_new(user_id: str, attribute: str, campus: str) -> str:
     """
-    重新领养（对齐 TS handleAdopt mode=replace）
+    重新领养
     删旧档案 + 全新抽卡 + 新编号 + 保底归零
     """
     ensure_db()
@@ -182,7 +181,7 @@ def adopt_new(user_id: str, attribute: str, campus: str) -> str:
 
 def retest(user_id: str) -> str:
     """
-    重测人格（对齐 TS handleRetest）
+    重测人格
     保留档案+编号+保底，只换人格维度，draw_type=retest
     """
     ensure_db()
@@ -234,7 +233,7 @@ def retest(user_id: str) -> str:
 
 
 def show_profile(user_id: str, is_open: bool = False) -> str:
-    """查看档案（对齐 TS handleGetProfile）"""
+    """查看档案"""
     ensure_db()
     profile = get_profile(user_id)
     if not profile:
@@ -280,7 +279,7 @@ def show_profile(user_id: str, is_open: bool = False) -> str:
 
 def cmd_recall(user_id: str, keyword: str) -> dict:
     """
-    查询记忆（对齐 TS handleQueryMemory 7步查询）
+    查询记忆
     1. 种子记忆精确查
     2. 种子记忆模糊查
     3. 种子记忆 canonical 反向查
@@ -351,7 +350,7 @@ def cmd_recall(user_id: str, keyword: str) -> dict:
 
 def cmd_remember(user_id: str, keyword: str, canonical: str,
                  search_hint: str = '', campus: str = '') -> str:
-    """记住知识（对齐 TS handleSaveMemory）"""
+    """记住知识"""
     ensure_db()
     profile = get_profile(user_id)
     if not profile:
@@ -361,7 +360,7 @@ def cmd_remember(user_id: str, keyword: str, canonical: str,
 
 
 def cmd_rename(user_id: str, new_name: str) -> str:
-    """改名（对齐 TS handleRename）"""
+    """改名"""
     ensure_db()
     valid, err = sanitize_nickname(new_name)
     if not valid:
@@ -374,7 +373,7 @@ def cmd_rename(user_id: str, new_name: str) -> str:
 
 
 def cmd_memories(user_id: str) -> str:
-    """列出所有记忆（对齐 TS handleListMemories）"""
+    """列出所有记忆"""
     ensure_db()
     memories = get_all_memories(user_id)
     if not memories:
@@ -388,7 +387,7 @@ def cmd_memories(user_id: str) -> str:
 
 
 def cmd_forget(user_id: str, keyword: str) -> str:
-    """遗忘知识（对齐 TS handleForgetMemory）"""
+    """遗忘知识"""
     ensure_db()
     delete_memory(user_id, keyword)
     return f"🧹 好，「{keyword}」我忘了～"
