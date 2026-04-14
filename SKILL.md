@@ -27,6 +27,9 @@ DUCK_USER_ID=<user_id> python3 duck.py <命令> [参数]
 - `DUCK_USER_ID`：用户唯一标识（必填）
 - `DUCK_DB_PATH`：数据库路径（默认 `data/duck.db`）
 - `DUCK_YAYAID_URL`：云函数编号服务 URL（默认腾讯云函数）
+- `DUCK_YAYAID_TIMEOUT`：编号请求超时秒数（默认 `5`）
+- `DUCK_YAYAID_RETRIES`：无效编号或网络失败时的重试次数（默认 `3`）
+- `DUCK_YAYAID_BACKOFF`：重试间隔基数秒，线性递增（默认 `0.35`）
 
 ## 一、核心规则
 

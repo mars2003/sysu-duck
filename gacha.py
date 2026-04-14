@@ -177,6 +177,8 @@ def get_rarity_emoji(rarity: str) -> str:
 def format_draw_result(d: dict) -> str:
     emoji = get_rarity_emoji(d['rarity'])
     rarity_name = {'N': '普通', 'R': '稀有', 'SR': '超稀有', 'SSR': '极稀有'}.get(d['rarity'], '')
-    return (f"{emoji} {rarity_name} — 【{d['attribute']}】{d['personality_label']}\n"
+    personality = d.get('personality_label', d.get('mbti_key', ''))
+    campus = d.get('campus', '')
+    return (f"{emoji} {rarity_name} — 【{d['attribute']}】{personality}\n"
             f"🏷️ 称号：{d['title']}\n"
-            f"📍 校区：{d['campus']}")
+            f"📍 校区：{campus}")

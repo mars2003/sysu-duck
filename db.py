@@ -22,14 +22,15 @@ def ensure_db():
 
 
 def get_conn():
+    """打开连接；timeout 缓解多进程/多线程短时间锁竞争。"""
     os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
-    return sqlite3.connect(DB_PATH)
+    return sqlite3.connect(DB_PATH, timeout=15.0)
 
 
 def init_db():
     """初始化数据库表结构（对齐 TS schema）"""
     os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH, timeout=15.0)
     c = conn.cursor()
 
     # 鸭鸭档案表

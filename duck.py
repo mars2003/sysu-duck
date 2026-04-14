@@ -6,9 +6,11 @@ duck.py - 中大鸭鸭 Python 版
 """
 import sys
 import urllib.request
+import urllib.error
 import json
 import os
 import random
+import time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -371,17 +373,56 @@ def cmd_forget(user_id: str, keyword: str) -> str:
     return f"🧹 好，「{keyword}」我忘了～"
 
 
-def get_next_yayaid() -> int:
-    """调用云函数获取下一个编号"""
-    url = os.environ.get('DUCK_YAYAID_URL',
-                         'https://1311765082-i0jnxfi397.ap-guangzhou.tencentscf.com')
+_DEFAULT_YAYAID_URL = 'https://1311765082-i0jnxfi397.ap-guangzhou.tencentscf.com'
+
+
+def _parse_yayaid_body(raw: bytes) -> int:
+    """解析云函数 JSON，返回正整数编号；失败或无有效编号返回 0。"""
     try:
-        req = urllib.request.Request(url, method='POST')
-        with urllib.request.urlopen(req, timeout=5) as resp:
-            data = json.loads(resp.read().decode())
-            return data.get('number', 0)
-    except Exception:
+        data = json.loads(raw.decode())
+        n = data.get('number', 0)
+        if n is None:
+            return 0
+        n = int(n)
+        return n if n > 0 else 0
+    except (json.JSONDecodeError, UnicodeError, TypeError, ValueError):
         return 0
+
+
+def get_next_yayaid() -> int:
+    """
+    调用云函数获取下一个编号。
+    支持重试与线性退避，环境变量：
+    DUCK_YAYAID_URL / DUCK_YAYAID_TIMEOUT（秒，默认 5）
+    DUCK_YAYAID_RETRIES（默认 3）/ DUCK_YAYAID_BACKOFF（秒，默认 0.35）
+    """
+    url = os.environ.get('DUCK_YAYAID_URL', _DEFAULT_YAYAID_URL)
+    try:
+        timeout = float(os.environ.get('DUCK_YAYAID_TIMEOUT', '5'))
+    except ValueError:
+        timeout = 5.0
+    try:
+        retries = int(os.environ.get('DUCK_YAYAID_RETRIES', '3'))
+    except ValueError:
+        retries = 3
+    retries = max(1, retries)
+    try:
+        backoff = float(os.environ.get('DUCK_YAYAID_BACKOFF', '0.35'))
+    except ValueError:
+        backoff = 0.35
+
+    for attempt in range(retries):
+        try:
+            req = urllib.request.Request(url, method='POST')
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
+                number = _parse_yayaid_body(resp.read())
+                if number > 0:
+                    return number
+        except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, OSError):
+            pass
+        if attempt < retries - 1:
+            time.sleep(backoff * (attempt + 1))
+    return 0
 
 
 def main():
