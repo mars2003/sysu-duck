@@ -6,5 +6,6 @@ data/*.db
 *.egg-info/
 tests/
 .clawignore
-# Exclude assets (prompt files and seed data)
-assets/seed/conversation_memory_seed_sysu.csv
+
+# User-requested ignore patterns
+conversation_memory_seed_sysu.csv
