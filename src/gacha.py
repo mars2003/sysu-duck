@@ -3,6 +3,8 @@ gacha.py - 鸭鸭抽卡系统
 纯 Python 实现，32种人格组合 + SSR/SR/R/N 稀有度
 与 TS src/lib/gacha.ts 完全对齐
 """
+from __future__ import annotations
+
 import random
 import json
 import os
@@ -14,7 +16,13 @@ DECISION_LIST = ['T', 'F']  # thinking vs feeling
 
 
 def load_json(name: str) -> dict:
-    path = os.path.join(os.path.dirname(__file__), 'assets', 'prompts', f'{name}.json')
+    base = os.path.dirname(__file__)
+    rel = os.path.join('assets', 'prompts', f'{name}.json')
+    candidates = [
+        os.path.join(base, rel),
+        os.path.join(base, '..', rel),
+    ]
+    path = next((p for p in candidates if os.path.exists(p)), candidates[-1])
     with open(path, encoding='utf-8') as f:
         return json.load(f)
 

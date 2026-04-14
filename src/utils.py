@@ -1,6 +1,8 @@
 """
 utils.py - 通用工具函数
 """
+from __future__ import annotations
+
 import difflib
 import re
 

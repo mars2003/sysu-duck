@@ -1,6 +1,8 @@
 """
 entities.py - 实体识别 + 模糊匹配
 """
+from __future__ import annotations
+
 import json
 import os
 from utils import SequenceMatcher, fuzzy_match

@@ -26,6 +26,8 @@ description: 中山大学AI陪伴鸭鸭。当用户输入/领养鸭鸭、/开启
 DUCK_USER_ID=<user_id> python3 duck.py <命令> [参数]
 ```
 
+**运行环境**：Python **3.9+**（代码使用 `from __future__ import annotations`，在 3.9 下也可正常使用 `list[str]`、`X | Y` 等类型标注；若仅用 3.10+ 可忽略此说明）。静态资源位于仓库根目录的 `assets/`，脚本在 `src/` 下运行时会自动解析到上级目录的 `assets/`。
+
 环境变量：
 
 - `DUCK_USER_ID`：用户唯一标识（必填）

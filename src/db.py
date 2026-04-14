@@ -331,7 +331,13 @@ def get_seed_memory_by_canonical(canonical: str) -> Optional[Dict[str, Any]]:
 def init_seed_memories():
     """初始化种子记忆（从 CSV 导入）"""
     import csv
-    seed_file = os.path.join(os.path.dirname(__file__), 'assets', 'seed', 'conversation_memory_seed_sysu.csv')
+    _base = os.path.dirname(__file__)
+    _rel = os.path.join('assets', 'seed', 'conversation_memory_seed_sysu.csv')
+    _candidates = [
+        os.path.join(_base, _rel),
+        os.path.join(_base, '..', _rel),
+    ]
+    seed_file = next((p for p in _candidates if os.path.exists(p)), _candidates[-1])
     if not os.path.exists(seed_file):
         return 0
 
