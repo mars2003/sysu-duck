@@ -87,6 +87,30 @@ class TestRecallFuzzyAndEntity(unittest.TestCase):
         self.assertIn('entity_hint', r)
         self.assertEqual(r['canonical'], '实体标准canonical段落')
 
+    def test_entity_step6_user_hit_by_entity_keyword(self):
+        """第 6 步：实体 canonical 与用户记忆的 keyword 一致时命中。"""
+        self.db.save_memory('u1', '标准实体名', '用户保存的答案', '', '南校')
+        fake_res = {'canonical': '标准实体名', 'hint': '', 'campus': '南校'}
+        with patch.object(self.duck, 'resolve_entity', return_value=fake_res):
+            with patch.object(self.duck, 'best_memory_match', return_value=None):
+                r = self.duck.cmd_recall('u1', '用户口头别名说法')
+        self.assertTrue(r['hit'])
+        self.assertEqual(r['source'], 'user')
+        self.assertIn('entity_hint', r)
+        self.assertEqual(r['canonical'], '用户保存的答案')
+
+    def test_entity_step6_user_hit_by_canonical_column(self):
+        """第 6 步：keyword 与实体名不同，但 canonical 列与解析结果一致时命中。"""
+        self.db.save_memory('u1', '口语关键词', '唯一canonical值', '', '东校')
+        fake_res = {'canonical': '唯一canonical值', 'hint': '', 'campus': ''}
+        with patch.object(self.duck, 'resolve_entity', return_value=fake_res):
+            with patch.object(self.duck, 'best_memory_match', return_value=None):
+                r = self.duck.cmd_recall('u1', '某别名')
+        self.assertTrue(r['hit'])
+        self.assertEqual(r['source'], 'user')
+        self.assertIn('entity_hint', r)
+        self.assertEqual(r['canonical'], '唯一canonical值')
+
 
 if __name__ == '__main__':
     unittest.main()
