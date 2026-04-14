@@ -51,27 +51,29 @@ def cmd_help():
     return """
 🦆 中大鸭鸭 - 指令列表
 
-领养系列：
-  adopt <nickname> <attribute> <campus>  创建鸭鸭
-  adopt_new <attribute> <campus>         重新领养（删旧档案，全新开始）
-  profile                                  查看档案
-  open                                     开启鸭鸭模式
+【聊天里对用户展示的指令】（与 SKILL.md 一致）
+  /领养鸭鸭 [昵称] [属性] [校区]    创建鸭鸭档案
+  /领养新鸭鸭 [属性] [校区]        保留昵称，重新抽取人格
+  /重测                            等同领养新鸭鸭，沿用档案里属性与校区
+  /开启鸭鸭                        激活鸭鸭模式（档案+人格介绍）
+  /我的鸭鸭                        查看档案
+  /改名 <新昵称>                   改名（限 8 字内，中文/英文/数字）
+  /刷新编号                        刷新全校鸭鸭编号
+  /记忆列表                        已记住的校园知识列表
+  /鸭鸭帮助                        本列表（对话里也可由模型直接复述，无需跑命令）
 
-管理：
-  rename <new_name>                        改名
-  retest                                   重测人格
-  refresh                                  刷新编号
+  属性：呆萌、叛逆、睿智、魅力
+  校区：南校、北校、东校、珠海、深圳
 
-记忆：
-  remember <keyword> <canonical> [search_hint] [campus]  记住知识
-  recall <keyword>                                 查询记忆
-  memories                                     记忆列表
-  forget <keyword>                               遗忘知识
+【等价 CLI】（自动化 / 调试；在技能包根目录执行 python3 duck.py …）
+  adopt / adopt_new / retest / open / profile / rename / refresh / memories
+  recall <关键词>     查询记忆（JSON）
+  remember …          写入记忆（由 AI 在校园问答流程中按需调用）
+  forget <关键词>     遗忘一条记忆
 
 示例：
-  duck.py adopt 阿花 呆萌 南校
-  duck.py profile
-  duck.py remember 图书馆借书 持校园卡在一楼柜台借阅，一般可借30天 图书馆 借书 南校
+  python3 duck.py adopt 阿花 呆萌 南校
+  python3 duck.py profile
 """
 
 
