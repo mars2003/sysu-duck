@@ -57,4 +57,4 @@ python3 -m unittest discover -s tests -v
 
 将本目录作为技能源导入工具时，指向 **`SKILL.md`** 即可；需要细节时再读 `references/reference.md` / `references/examples.md`。
 
-**作者**: Mars · **日期**: 2026-04-14
+**作者**: Mars · **日期**: 2026-04-14 · **许可证**: [MIT](LICENSE)
