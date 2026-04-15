@@ -50,7 +50,7 @@ def cmd_help():
     return """
 🦆 中大鸭鸭 - 指令列表
 
-【聊天里对用户展示的指令】（与 SKILL.md 一致）
+【聊天里对用户展示的指令】
   /领养鸭鸭 [昵称] [属性] [校区]    创建鸭鸭档案
   /领养新鸭鸭 [属性] [校区]        保留昵称，重新抽取人格
   /重测                            等同领养新鸭鸭，沿用档案里属性与校区
@@ -59,12 +59,12 @@ def cmd_help():
   /改名 <新昵称>                   改名（限 8 字内，中文/英文/数字）
   /刷新编号                        刷新全校鸭鸭编号
   /记忆列表                        已记住的校园知识列表
-  /鸭鸭帮助                        本列表（对话里也可由模型直接复述，无需跑命令）
+  /鸭鸭帮助                        本列表
 
   属性：呆萌、叛逆、睿智、魅力
   校区：南校、北校、东校、珠海、深圳
 
-【等价 CLI】（自动化 / 调试；在技能包根目录执行 python3 duck.py …）
+【等价 CLI】
   adopt / adopt_new / retest / open / profile / rename / refresh / memories
   recall <关键词>     查询记忆（JSON）
   remember …          写入记忆（由 AI 在校园问答流程中按需调用）
@@ -83,10 +83,7 @@ CAMPUSES = ['南校', '北校', '东校', '珠海', '深圳']
 
 
 def parse_adopt_args(args_text: str) -> dict:
-    """
-    智能解析领养参数
-    自动识别昵称/属性/校区的位置
-    """
+    """智能解析领养参数"""
     parts = args_text.strip().split()
     result = {}
     for part in parts:
@@ -112,10 +109,7 @@ def default_campus() -> str:
 # ============ 核心命令 ============
 
 def adopt(user_id: str, nickname: str, attribute: str, campus: str) -> str:
-    """
-    创建鸭鸭
-    全新抽卡 + 保底归零 + 领取新编号
-    """
+    """创建鸭鸭"""
     ensure_db()
 
     # 保底归零（全新开始）
@@ -164,10 +158,7 @@ def adopt(user_id: str, nickname: str, attribute: str, campus: str) -> str:
 
 
 def adopt_new(user_id: str, attribute: str, campus: str) -> str:
-    """
-    重新领养
-    删旧档案 + 全新抽卡 + 新编号 + 保底归零
-    """
+    """重新领养"""
     ensure_db()
     profile = get_profile(user_id)
 
@@ -180,10 +171,7 @@ def adopt_new(user_id: str, attribute: str, campus: str) -> str:
 
 
 def retest(user_id: str) -> str:
-    """
-    重测人格
-    保留档案+编号+保底，只换人格维度，draw_type=retest
-    """
+    """重测人格"""
     ensure_db()
     profile = get_profile(user_id)
     if not profile:
@@ -278,16 +266,7 @@ def show_profile(user_id: str, is_open: bool = False) -> str:
 
 
 def cmd_recall(user_id: str, keyword: str) -> dict:
-    """
-    查询记忆
-    1. 种子记忆精确查
-    2. 种子记忆模糊查
-    3. 种子记忆 canonical 反向查
-    4. 用户个人记忆精确查
-    5. 用户个人记忆模糊查
-    6. 实体标准化后再查
-    7. 完全无记录返回实体标准化结果
-    """
+    """查询记忆"""
     lower_kw = keyword.strip()
 
     # 1. 种子记忆精确查
@@ -410,12 +389,7 @@ def _parse_yayaid_body(raw: bytes) -> int:
 
 
 def get_next_yayaid() -> int:
-    """
-    调用云函数获取下一个编号。
-    支持重试与线性退避，环境变量：
-    DUCK_YAYAID_URL / DUCK_YAYAID_TIMEOUT（秒，默认 5）
-    DUCK_YAYAID_RETRIES（默认 3）/ DUCK_YAYAID_BACKOFF（秒，默认 0.35）
-    """
+    """调用云函数获取下一个编号"""
     url = os.environ.get('DUCK_YAYAID_URL', _DEFAULT_YAYAID_URL)
     try:
         timeout = float(os.environ.get('DUCK_YAYAID_TIMEOUT', '5'))
